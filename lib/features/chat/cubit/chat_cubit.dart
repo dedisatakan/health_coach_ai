@@ -20,22 +20,44 @@ class ChatCubit extends Cubit<ChatState> {
   ChatCubit(this.coach) : super(ChatInitial());
 
   Future<void> init() async {
+    emit(const ChatLoading([]));
     _messagesBox = HiveService.messagesBox;
     _sessionsBox = HiveService.sessionsBox;
+    _model = ai.FirebaseAI.googleAI().generativeModel(
+      model: 'gemini-2.5-flash-lite',
+      systemInstruction: ai.Content.system(coach.persona),
+    );
+    _chat = _model.startChat();
+    emit(ChatLoaded(messages: const []));
+  }
+
+  Future<void> loadSession(ChatSession session) async {
+    _messagesBox = HiveService.messagesBox;
+    _sessionsBox = HiveService.sessionsBox;
+    _session = session;
+
+    final messages = session.messageIds
+        .map((id) => _messagesBox.get(id))
+        .whereType<ChatMessage>()
+        .toList();
+
+    final history = messages
+        .map((m) => m.isUser
+            ? ai.Content.text(m.content)
+            : ai.Content.model([ai.TextPart(m.content)]))
+        .toList();
 
     _model = ai.FirebaseAI.googleAI().generativeModel(
       model: 'gemini-2.5-flash-lite',
       systemInstruction: ai.Content.system(coach.persona),
     );
-
-    _chat = _model.startChat();
-    emit(ChatLoaded(messages: const []));
+    _chat = _model.startChat(history: history);
+    emit(ChatLoaded(messages: messages));
   }
 
   Future<void> sendMessage(String text) async {
     final currentMessages = _getCurrentMessages();
 
-    // Create session lazily on first message
     if (_session == null) {
       _session = ChatSession(
         id: _uuid.v4(),
