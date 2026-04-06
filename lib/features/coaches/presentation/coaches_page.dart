@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../cubit/coaches_cubit.dart';
 import '../cubit/coaches_state.dart';
 import '../data/models/coach.dart';
+import '../../chat/presentation/chat_page.dart';
 
 class CoachesPage extends StatelessWidget {
   const CoachesPage({super.key});
@@ -64,7 +65,11 @@ class _CoachCard extends StatelessWidget {
             style: TextStyle(color: Theme.of(context).colorScheme.primary)),
         trailing: const Icon(Icons.chevron_right),
         onTap: () {
-          // TODO: Navigate to chat
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => ChatPage(coach: coach),
+            ),
+          );
         },
       ),
     );
