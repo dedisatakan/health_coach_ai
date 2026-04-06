@@ -11,7 +11,7 @@ import 'chat_state.dart';
 class ChatCubit extends Cubit<ChatState> {
   final Coach coach;
   late final ai.GenerativeModel _model;
-  late final ChatSession _session;
+  ChatSession? _session;
   late final Box<ChatMessage> _messagesBox;
   late final Box<ChatSession> _sessionsBox;
   final _uuid = const Uuid();
@@ -24,17 +24,9 @@ class ChatCubit extends Cubit<ChatState> {
     _sessionsBox = HiveService.sessionsBox;
 
     _model = ai.FirebaseAI.googleAI().generativeModel(
-      model: 'gemini-2.0-flash',
+      model: 'gemini-2.5-flash-lite',
       systemInstruction: ai.Content.system(coach.persona),
     );
-
-    _session = ChatSession(
-      id: _uuid.v4(),
-      coachId: coach.id,
-      coachName: coach.name,
-      startedAt: DateTime.now(),
-    );
-    await _sessionsBox.put(_session.id, _session);
 
     _chat = _model.startChat();
     emit(ChatLoaded(messages: const []));
@@ -43,6 +35,17 @@ class ChatCubit extends Cubit<ChatState> {
   Future<void> sendMessage(String text) async {
     final currentMessages = _getCurrentMessages();
 
+    // Create session lazily on first message
+    if (_session == null) {
+      _session = ChatSession(
+        id: _uuid.v4(),
+        coachId: coach.id,
+        coachName: coach.name,
+        startedAt: DateTime.now(),
+      );
+      await _sessionsBox.put(_session!.id, _session!);
+    }
+
     final userMessage = ChatMessage(
       id: _uuid.v4(),
       content: text,
@@ -50,8 +53,8 @@ class ChatCubit extends Cubit<ChatState> {
       timestamp: DateTime.now(),
     );
     await _messagesBox.put(userMessage.id, userMessage);
-    _session.messageIds.add(userMessage.id);
-    await _session.save();
+    _session!.messageIds.add(userMessage.id);
+    await _session!.save();
 
     final updatedMessages = [...currentMessages, userMessage];
     emit(ChatLoaded(messages: updatedMessages, isTyping: true));
@@ -67,8 +70,8 @@ class ChatCubit extends Cubit<ChatState> {
         timestamp: DateTime.now(),
       );
       await _messagesBox.put(aiMessage.id, aiMessage);
-      _session.messageIds.add(aiMessage.id);
-      await _session.save();
+      _session!.messageIds.add(aiMessage.id);
+      await _session!.save();
 
       emit(ChatLoaded(messages: [...updatedMessages, aiMessage]));
     } catch (e) {

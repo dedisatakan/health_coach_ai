@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../cubit/chat_cubit.dart';
 import '../cubit/chat_state.dart';
 import '../data/models/chat_message.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 import '../../coaches/data/models/coach.dart';
 
 class ChatPage extends StatefulWidget {
@@ -75,10 +76,22 @@ class _ChatPageState extends State<ChatPage> {
             children: [
               Expanded(
                 child: BlocConsumer<ChatCubit, ChatState>(
-                  listener: (context, state) => _scrollToBottom(),
+                  listener: (context, state) {
+                    _scrollToBottom();
+                    if (state is ChatError) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: const Text('Failed to get a response. Please try again.'),
+                          backgroundColor: Theme.of(context).colorScheme.error,
+                          behavior: SnackBarBehavior.floating,
+                        ),
+                      );
+                    }
+                  },
                   builder: (context, state) {
                     List<ChatMessage> messages = [];
                     bool isTyping = false;
+                    bool hasError = false;
 
                     if (state is ChatLoaded) {
                       messages = state.messages;
@@ -88,6 +101,7 @@ class _ChatPageState extends State<ChatPage> {
                       isTyping = true;
                     } else if (state is ChatError) {
                       messages = state.messages;
+                      hasError = true;
                     } else if (state is ChatInitial) {
                       return const Center(child: CircularProgressIndicator());
                     }
@@ -95,11 +109,14 @@ class _ChatPageState extends State<ChatPage> {
                     return ListView.builder(
                       controller: _scrollController,
                       padding: const EdgeInsets.all(16),
-                      itemCount: messages.length + (isTyping ? 1 : 0),
+                      itemCount: messages.length + (isTyping ? 1 : 0) + (hasError ? 1 : 0),
                       itemBuilder: (context, index) {
                         if (isTyping && index == messages.length) {
                           return _TypingIndicator(
                               coachEmoji: widget.coach.avatarEmoji);
+                        }
+                        if (hasError && index == messages.length) {
+                          return _ErrorBubble(error: (state as ChatError).message);
                         }
                         return _MessageBubble(message: messages[index]);
                       },
@@ -139,13 +156,22 @@ class _MessageBubble extends StatelessWidget {
               : Theme.of(context).colorScheme.surfaceContainerHigh,
           borderRadius: BorderRadius.circular(16),
         ),
-        child: Text(
-          message.content,
-          style: TextStyle(
-            color: isUser ? Colors.white : Colors.black87,
-            fontSize: 15,
-          ),
-        ),
+        child: message.isUser
+            ? Text(
+                message.content,
+                style: const TextStyle(color: Colors.white, fontSize: 15),
+              )
+            : MarkdownBody(
+                data: message.content,
+                styleSheet: MarkdownStyleSheet(
+                  p: const TextStyle(color: Colors.black87, fontSize: 15),
+                  strong: const TextStyle(
+                      color: Colors.black87,
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold),
+                  listBullet: const TextStyle(color: Colors.black87, fontSize: 15),
+                ),
+              ),
       ),
     );
   }
@@ -168,6 +194,40 @@ class _TypingIndicator extends StatelessWidget {
         ),
         child: Text('$coachEmoji is typing...',
             style: const TextStyle(color: Colors.black54, fontSize: 14)),
+      ),
+    );
+  }
+}
+
+class _ErrorBubble extends StatelessWidget {
+  final String error;
+  const _ErrorBubble({required this.error});
+
+  @override
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.errorContainer,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.error_outline,
+                size: 16, color: Theme.of(context).colorScheme.onErrorContainer),
+            const SizedBox(width: 6),
+            Flexible(
+              child: Text(error,
+                  style: TextStyle(
+                      color: Theme.of(context).colorScheme.onErrorContainer,
+                      fontSize: 12)),
+            ),
+          ],
+        ),
       ),
     );
   }

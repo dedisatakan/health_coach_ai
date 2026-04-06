@@ -9,9 +9,7 @@ class HistoryPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => HistoryCubit()..loadHistory(),
-      child: Scaffold(
+    return Scaffold(
         appBar: AppBar(
           title: const Text('Chat History'),
           centerTitle: true,
@@ -70,7 +68,6 @@ class HistoryPage extends StatelessWidget {
             return const SizedBox.shrink();
           },
         ),
-      ),
     );
   }
 }

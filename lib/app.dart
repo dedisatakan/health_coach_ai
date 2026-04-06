@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'core/services/remote_config_service.dart';
 import 'features/coaches/cubit/coaches_cubit.dart';
 import 'features/coaches/presentation/coaches_page.dart';
+import 'features/history/cubit/history_cubit.dart';
 import 'features/history/presentation/history_page.dart';
 
 class App extends StatelessWidget {
@@ -36,12 +37,34 @@ class _HomeShell extends StatefulWidget {
 
 class _HomeShellState extends State<_HomeShell> {
   int _selectedIndex = 0;
+  late final HistoryCubit _historyCubit;
+
+  @override
+  void initState() {
+    super.initState();
+    _historyCubit = HistoryCubit();
+  }
+
+  @override
+  void dispose() {
+    _historyCubit.close();
+    super.dispose();
+  }
+
+  void _onTabSelected(int index) {
+    setState(() => _selectedIndex = index);
+    if (index == 1) _historyCubit.loadHistory();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) =>
-          CoachesCubit(widget.remoteConfigService)..loadCoaches(),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (_) => CoachesCubit(widget.remoteConfigService)..loadCoaches(),
+        ),
+        BlocProvider.value(value: _historyCubit),
+      ],
       child: Scaffold(
         body: IndexedStack(
           index: _selectedIndex,
@@ -52,7 +75,7 @@ class _HomeShellState extends State<_HomeShell> {
         ),
         bottomNavigationBar: NavigationBar(
           selectedIndex: _selectedIndex,
-          onDestinationSelected: (i) => setState(() => _selectedIndex = i),
+          onDestinationSelected: _onTabSelected,
           destinations: const [
             NavigationDestination(
               icon: Icon(Icons.people_outline),
