@@ -38,22 +38,30 @@ class _HomeShell extends StatefulWidget {
 class _HomeShellState extends State<_HomeShell> {
   int _selectedIndex = 0;
   late final HistoryCubit _historyCubit;
+  late final PageController _pageController;
 
   @override
   void initState() {
     super.initState();
     _historyCubit = HistoryCubit();
+    _pageController = PageController();
   }
 
   @override
   void dispose() {
     _historyCubit.close();
+    _pageController.dispose();
     super.dispose();
   }
 
   void _onTabSelected(int index) {
     setState(() => _selectedIndex = index);
     if (index == 1) _historyCubit.loadHistory();
+    _pageController.animateToPage(
+      index,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+    );
   }
 
   @override
@@ -66,8 +74,9 @@ class _HomeShellState extends State<_HomeShell> {
         BlocProvider.value(value: _historyCubit),
       ],
       child: Scaffold(
-        body: IndexedStack(
-          index: _selectedIndex,
+        body: PageView(
+          controller: _pageController,
+          physics: const NeverScrollableScrollPhysics(),
           children: const [
             CoachesPage(),
             HistoryPage(),
