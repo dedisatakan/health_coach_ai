@@ -89,7 +89,7 @@ class HistoryPage extends StatelessWidget {
                       child: Text(coach.avatarEmoji,
                           style: const TextStyle(fontSize: 20)),
                     ),
-                    title: Text(session.coachName,
+                    title: Text(coach.name,
                         style: const TextStyle(fontWeight: FontWeight.bold)),
                     subtitle: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
