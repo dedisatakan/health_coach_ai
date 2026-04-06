@@ -42,7 +42,7 @@ lib/
 |---|---|
 | Framework | Flutter |
 | State Management | Cubit (flutter_bloc) |
-| AI Backend | Firebase AI Logic (Gemini 2.0 Flash) |
+| AI Backend | Firebase AI Logic (Gemini 2.5 Flash Lite) |
 | Dynamic Config | Firebase Remote Config |
 | Local Storage | Hive |
 | ID Generation | uuid |
@@ -58,7 +58,11 @@ Three Cubits, each owning one feature slice:
 ## Firebase Setup
 
 - **Firebase AI Logic** — Gemini Developer API (free tier, no Blaze plan required)
-- **Remote Config** — 4 parameters: `coach_dietitian_persona`, `coach_fitness_persona`, `coach_pilates_persona`, `coach_yoga_persona`
+- **Remote Config** — 4 string parameters to create in your Firebase project:
+  - `dietitian_prompt` — persona for Dr. Ayşe
+  - `fitness_coach_prompt` — persona for Coach Mert
+  - `pilates_instructor_prompt` — persona for Instructor Selin
+  - `yoga_teacher_prompt` — persona for Guru Deniz
 - Config files excluded from version control (`.gitignore`)
 
 ## Getting Started
