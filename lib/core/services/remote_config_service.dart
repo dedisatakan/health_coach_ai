@@ -30,7 +30,7 @@ class RemoteConfigService {
       ),
       Coach(
         id: 'pilates',
-        name: 'İnstructor Selin',
+        name: 'Instructor Selin',
         specialty: 'Pilates Instructor',
         persona: _remoteConfig.getString('pilates_instructor_prompt'),
         avatarEmoji: '🧘',
