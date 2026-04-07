@@ -82,28 +82,12 @@ class ChatCubit extends Cubit<ChatState> {
     emit(ChatLoaded(messages: updatedMessages, isTyping: true));
 
     try {
-      final stream = _chat.sendMessageStream(ai.Content.text(text));
-      final aiMessageId = _uuid.v4();
-      var responseText = '';
+      final response = await _chat.sendMessage(ai.Content.text(text));
+      final responseText = response.text ?? 'Sorry, I could not respond.';
 
-      await for (final chunk in stream) {
-        responseText += chunk.text ?? '';
-        final partialMessage = ChatMessage(
-          id: aiMessageId,
-          content: responseText,
-          isUser: false,
-          timestamp: DateTime.now(),
-        );
-        emit(ChatLoaded(
-          messages: [...updatedMessages, partialMessage],
-          isTyping: true,
-        ));
-      }
-
-      final finalText = responseText.isEmpty ? 'Sorry, I could not respond.' : responseText;
       final aiMessage = ChatMessage(
-        id: aiMessageId,
-        content: finalText,
+        id: _uuid.v4(),
+        content: responseText,
         isUser: false,
         timestamp: DateTime.now(),
       );
