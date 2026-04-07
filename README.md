@@ -2,6 +2,12 @@
 
 A Flutter health & wellness app featuring 4 AI-powered coaches, built as a case study for Connectinno.
 
+## Screenshots
+
+| Coaches | Chat | History |
+|---|---|---|
+| ![Coaches](screenshots/coaches.png) | ![Chat](screenshots/chat.png) | ![History](screenshots/history.png) |
+
 ## Features
 
 - **4 AI Coaches** — Dietitian, Fitness Coach, Pilates Instructor, Yoga Teacher
