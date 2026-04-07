@@ -82,10 +82,3 @@ flutterfire configure --project=YOUR_PROJECT_ID
 # 4. Run
 flutter run
 ```
-
-## Interview Notes
-
-- **Why Cubit over Bloc?** Less boilerplate for this scope — no need for event classes when methods suffice
-- **Why Hive?** NoSQL, pure Dart, zero native dependencies, justified in interviews as a deliberate architectural choice over SQLite
-- **Why feature-based folders?** Scales better than layer-based; each feature is self-contained and independently testable
-- **Firebase AI prefix** — `firebase_ai` exports its own `ChatSession`; resolved with `import ... as ai` to avoid collision with our Hive model
