@@ -5,10 +5,12 @@ import '../cubit/chat_state.dart';
 import '../data/models/chat_message.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import '../../coaches/data/models/coach.dart';
+import '../../history/data/models/chat_session.dart';
 
 class ChatPage extends StatefulWidget {
   final Coach coach;
-  const ChatPage({super.key, required this.coach});
+  final ChatSession? existingSession;
+  const ChatPage({super.key, required this.coach, this.existingSession});
 
   @override
   State<ChatPage> createState() => _ChatPageState();
@@ -48,7 +50,15 @@ class _ChatPageState extends State<ChatPage> {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => ChatCubit(widget.coach)..init(),
+      create: (_) {
+        final cubit = ChatCubit(widget.coach);
+        if (widget.existingSession != null) {
+          cubit.loadSession(widget.existingSession!);
+        } else {
+          cubit.init();
+        }
+        return cubit;
+      },
       child: Builder(
         builder: (context) => Scaffold(
           appBar: AppBar(
